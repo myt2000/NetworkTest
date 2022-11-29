@@ -3,6 +3,8 @@ package com.brooks.newworktest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.InputStreamReader
@@ -16,40 +18,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sendRequestBtn.setOnClickListener {
-            sendRequestWithHttpURLConnection()
+            sendRequestWithOkHttp()
         }
     }
 
 
-    private fun sendRequestWithHttpURLConnection() {
-        // 开启线程发起网络请求
+    private fun sendRequestWithOkHttp() {
         thread {
-
-            var connection: HttpURLConnection? = null
-
             try {
-                val response = StringBuilder()
-                val url = URL("https://www.baidu.com")
-                connection = url.openConnection() as HttpURLConnection
-                connection.connectTimeout = 8000
-                connection.readTimeout = 8000
-                val input = connection.inputStream
-                // post提交数据
-//                connection.requestMethod = "POST"
-//                val output = DataOutputStream(connection.outputStream)
-//                output.writeBytes("username=admin&password=12345")
-                // 下面对获取到的输入流进行读取
-                val reader = BufferedReader(InputStreamReader(input))
-                reader.use {
-                    reader.forEachLine {
-                        response.append(it)
-                    }
+                val client = OkHttpClient()
+                val request = Request.Builder()
+                    .url("https://www.baidu.com")
+                    .build()
+                val response = client.newCall(request).execute()
+                val responseData = response.body?.string()
+                if (responseData != null) {
+                    showRespones(responseData)
                 }
-                showRespones(response.toString())
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
-            } finally {
-                connection?.disconnect()
             }
         }
     }
