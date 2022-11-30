@@ -2,12 +2,16 @@ package com.brooks.newworktest
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.InputStreamReader
+import java.io.StringReader
 import java.net.CacheResponse
 import java.net.HttpURLConnection
 import java.net.URL
@@ -28,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 val client = OkHttpClient()
                 val request = Request.Builder()
-                    .url("https://www.baidu.com")
+                    .url("http://192.168.16.30/get_data.xml")
                     .build()
                 val response = client.newCall(request).execute()
                 val responseData = response.body?.string()
@@ -47,4 +51,41 @@ class MainActivity : AppCompatActivity() {
             responseText.text = response
         }
     }
+
+    private fun parseXMLWithPull(xmlData: String) {
+        try {
+            val factory = XmlPullParserFactory.newInstance()
+            val xmlPullParser = factory.newPullParser()
+            xmlPullParser.setInput(StringReader(xmlData))
+            var eventType = xmlPullParser.eventType
+            var id = ""
+            var name = ""
+            var version = ""
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                val nodeName = xmlPullParser.name
+                when (eventType) {
+                    // 开始解析某个节点
+                    XmlPullParser.START_TAG -> {
+                        when (nodeName) {
+                            "id" -> id = xmlPullParser.nextText()
+                            "name" -> name = xmlPullParser.nextText()
+                            "version" -> version = xmlPullParser.nextText()
+                        }
+                    }
+                    // 完成解析某个节点
+                    XmlPullParser.END_TAG -> {
+                        if ("app" == nodeName) {
+                            Log.d("xml解析", "id is $id ")
+                            Log.d("xml解析", "name is $name ")
+                            Log.d("xml解析", "version is $version ")
+                        }
+                    }
+                }
+                eventType = xmlPullParser.next()
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+
 }
