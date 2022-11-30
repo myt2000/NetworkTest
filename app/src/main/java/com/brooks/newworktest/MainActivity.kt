@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
                 val responseData = response.body?.string()
                 if (responseData != null) {
                     parseXMLWithPull(responseData)
+                    showRespones(responseData)
                 }
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
