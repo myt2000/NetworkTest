@@ -6,6 +6,7 @@ import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.xml.sax.InputSource
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.BufferedReader
@@ -15,6 +16,7 @@ import java.io.StringReader
 import java.net.CacheResponse
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.xml.parsers.SAXParserFactory
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -37,12 +39,25 @@ class MainActivity : AppCompatActivity() {
                 val response = client.newCall(request).execute()
                 val responseData = response.body?.string()
                 if (responseData != null) {
-                    parseXMLWithPull(responseData)
+                    parseXMLwITHSAX(responseData)
                     showRespones(responseData)
                 }
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private fun parseXMLwITHSAX(xmlData: String) {
+        try {
+            val factory = SAXParserFactory.newInstance()
+            val xmlReader = factory.newSAXParser().xmlReader
+            val handler = ContentHandler()
+            // 将ContentHandler的实例设置到xmlReader中
+            xmlReader.contentHandler = handler
+            xmlReader.parse(InputSource(StringReader(xmlData)))
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -88,5 +103,4 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
-
 }
