@@ -3,9 +3,12 @@ package com.brooks.newworktest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONArray
 import org.xml.sax.InputSource
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
@@ -34,17 +37,46 @@ class MainActivity : AppCompatActivity() {
             try {
                 val client = OkHttpClient()
                 val request = Request.Builder()
-                    .url("http://192.168.16.30/get_data.xml")
+                    .url("http://192.168.16.30/get_data.json")
                     .build()
                 val response = client.newCall(request).execute()
                 val responseData = response.body?.string()
                 if (responseData != null) {
-                    parseXMLwITHSAX(responseData)
+                    parseJSONWithGSON(responseData)
                     showRespones(responseData)
                 }
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private fun parseJSONWithGSON(jsonData: String) {
+        val gson = Gson()
+        val typeOf = object: TypeToken<List<App>>() {}.type
+        val appList = gson.fromJson<List<App>>(jsonData, typeOf)
+        for (app in appList) {
+            Log.d("GSON数据解析", "id is ${app.id}")
+            Log.d("GSON数据解析", "name is ${app.name}")
+            Log.d("GSON数据解析", "version is ${app.version}")
+        }
+    }
+
+
+    private fun parseJSONWithObject(jsonData: String) {
+        try {
+            val jsonArray = JSONArray(jsonData)
+            for (i in 0 until jsonArray.length()) {
+                val jsonObject = jsonArray.getJSONObject(i)
+                val id = jsonObject.getString("id")
+                val name = jsonObject.getString("name")
+                val version = jsonObject.getString("version")
+                Log.d("JSON数据解析", "id is $id")
+                Log.d("JSON数据解析", "name is $name")
+                Log.d("JSON数据解析", "version is $version")
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
         }
     }
 
