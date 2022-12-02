@@ -6,16 +6,12 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_main.*
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import org.json.JSONArray
 import org.xml.sax.InputSource
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
-import java.io.BufferedReader
-import java.io.DataOutputStream
-import java.io.InputStreamReader
-import java.io.StringReader
+import java.io.*
 import java.net.CacheResponse
 import java.net.HttpURLConnection
 import java.net.URL
@@ -28,6 +24,28 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         sendRequestBtn.setOnClickListener {
             sendRequestWithOkHttp()
+            HttpUtil.sendOkHttpRequest(address = "http://192.168.16.30/get_data.json", object: Callback{
+                override fun onResponse(call: Call, response: Response) {
+                    // 得到服务器返回的具体内容
+                    val responseData = response.body?.string()
+                    if (responseData != null) {
+                        parseJSONWithGSON(responseData)
+                    }
+                }
+
+                override fun onFailure(call: Call, e: IOException) {
+                    // 对异常情况进行处理
+                }
+            })
+
+//            HttpUtil.sendHttpRequest(address= "http://192.168.16.30/get_data.json", object: HttpCallbackListener {
+//                override fun onFinish(response: String) {
+//                    // 得到服务器返回的具体内容
+//                }
+//                override fun onError(e: Exception) {
+//                    // 在这里对异常情况进行处理
+//            }
+//            })
         }
     }
 
